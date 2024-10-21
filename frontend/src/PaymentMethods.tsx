@@ -113,7 +113,7 @@ const DELETE_PAYMENT_METHOD = gql`
 const PaymentMethods = ({ parentId }: { parentId: number }) => {
   const classes = useStyles();
   const [newMethod, setNewMethod] = useState("");
-  const { loading, data } = useQuery(GET_PAYMENT_METHODS, {
+  const { loading, data, refetch } = useQuery(GET_PAYMENT_METHODS, {
     variables: { parentId },
   });
   const [setActivePaymentMethod] = useMutation(SET_ACTIVE_PAYMENT_METHOD);
@@ -134,6 +134,7 @@ const PaymentMethods = ({ parentId }: { parentId: number }) => {
       addPaymentMethod({
         variables: { parentId, method: newMethod.trim() },
       }).then(() => {
+        refetch();
         setNewMethod("");
       });
     }
@@ -142,6 +143,8 @@ const PaymentMethods = ({ parentId }: { parentId: number }) => {
   const handleDeleteMethod = (method: string) => {
     deletePaymentMethod({
       variables: { parentId, method },
+    }).then(() => {
+      refetch();
     });
   };
 
