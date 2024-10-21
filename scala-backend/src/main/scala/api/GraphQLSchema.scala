@@ -57,17 +57,11 @@ object GraphQLSchema {
           }
       ),
       Field("deletePaymentMethod", BooleanType,
-        arguments = Argument("parentId", LongType) :: Argument("method", StringType) :: Nil,
+        arguments = Argument("paymentMethodId", LongType) ::Nil,
         resolve = ctx =>
-          (ctx.arg[Long]("parentId"), ctx.arg[String]("method")).pipe {
-              case (parentId, method) =>
-                ctx.ctx.retrievePaymentMethods(parentId).map { paymentMethods =>
-                  ParentProfileBackend(Nil, Nil, paymentMethods).pipe { initialParentProfileBackend =>
-                    val parentProfileBackend = initialParentProfileBackend.deletePaymentMethod(parentId, method)
-
-                    (initialParentProfileBackend.allPaymentMethods.toSet -- parentProfileBackend.allPaymentMethods).map(paymentMethod => ctx.ctx.deletePaymentMethod(paymentMethod.id))
-                  }
-                }
+          (ctx.arg[Long]("paymentMethodId")).pipe {
+              case (paymentMethodId) =>
+                ctx.ctx.deletePaymentMethod(paymentMethodId)
             }.map(_ => true)
       )
     )

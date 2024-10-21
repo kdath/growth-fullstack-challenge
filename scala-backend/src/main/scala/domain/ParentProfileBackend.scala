@@ -12,8 +12,7 @@ case class ParentProfileBackend(allParentProfiles: Seq[ParentProfile], allInvoic
 
   def createPaymentMethod(parentId: Int, method: String, isActive: Boolean) = this.copy(allPaymentMethods = allPaymentMethods :+ PaymentMethod(allPaymentMethods.length + 1, parentId, method, isActive))
 
-  def deletePaymentMethod(parentId: Long, method: String) =
-    this.copy(allPaymentMethods = allPaymentMethods.filterNot(pm => pm.parentId == parentId && pm.method == method))
+  def deletePaymentMethod(paymentMethodId: Long) = this.copy(allPaymentMethods = allPaymentMethods.filter(pm => pm.id == paymentMethodId))
 
   def paymentMethods(parentId: Long) = allPaymentMethods.filter(_.parentId == parentId).toList
 

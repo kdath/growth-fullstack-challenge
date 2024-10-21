@@ -75,8 +75,17 @@ class PaymentMethodsTests extends AnyFreeSpec with should.Matchers {
       parentProfileBackend
         .createParentProfile(parent = "Alice", child = "Bob")
         .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = true)
-        .deletePaymentMethod(parentId = 1, method = "Credit Card")
-        .paymentMethods(1) should (not contain(PaymentMethod(id = 1, parentId = 1, method = "Credit Card", isActive = true)))
+        .deletePaymentMethod(0)
+        .allPaymentMethods.length shouldBe 0
+    }
+
+    "When a payment method is deleted it should not remove other payment methods of same name" in {
+      parentProfileBackend
+        .createParentProfile(parent = "Alice", child = "Bob")
+        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = true)
+        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = false)
+        .deletePaymentMethod(1)
+        .allPaymentMethods.head shouldBe PaymentMethod(id = 1, parentId = 1, method = "Credit Card", isActive = true)
     }
 
     "When setting a payment method active, it should deactivate the current active one and activate the new one, so that we don't have multiple active payment methods" in {
