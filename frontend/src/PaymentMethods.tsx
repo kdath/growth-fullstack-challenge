@@ -9,6 +9,7 @@ import {
   Typography,
   TextField,
   IconButton,
+  Tooltip
 } from "@material-ui/core";
 import CreditCardIcon from "@material-ui/icons/CreditCard";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -125,6 +126,8 @@ const PaymentMethods = ({ parentId }: { parentId: number }) => {
   const handleActivate = (methodId: number) => {
     setActivePaymentMethod({
       variables: { parentId, methodId },
+    }).then(() => {
+      refetch();
     });
   };
 
@@ -203,11 +206,22 @@ const PaymentMethods = ({ parentId }: { parentId: number }) => {
               </Button>
             )}
             <IconButton
-              className={classes.deleteButton}
-              onClick={() => handleDeleteMethod(method.id)}
-              size="small"
+                className={classes.deleteButton}
+                onClick={() => handleDeleteMethod(method.id)}
+                disabled={method.isActive}
+                size="small"
             >
-              <DeleteIcon />
+              {
+                method.isActive ?
+                    <Tooltip title={"Activate a different payment method to delete this"}
+                             placement="top"
+                    >
+                      <span>
+                        <DeleteIcon/>
+                      </span>
+                    </Tooltip>
+                  : <DeleteIcon/>
+              }
             </IconButton>
           </ListItem>
         ))}
