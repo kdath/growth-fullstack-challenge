@@ -2,11 +2,11 @@ package api
 
 import scala.concurrent.ExecutionContext
 import scala.util.chaining._
-
 import domain._
 import repository.ProfileRepository
 import sangria.schema._
 import sangria.macros.derive._
+import java.time.LocalDateTime
 
 object GraphQLSchema {
 
@@ -42,7 +42,7 @@ object GraphQLSchema {
         arguments = Argument("parentId", LongType) :: Argument("method", StringType) :: Nil,
         resolve = ctx => (ctx.arg[Long]("parentId"), ctx.arg[String]("method")).pipe {
           case (parentId, method) =>
-            ctx.ctx.createPaymentMethod(PaymentMethod(0, parentId, method, isActive = false))
+            ctx.ctx.createPaymentMethod(PaymentMethod(0, parentId, method, isActive = false, LocalDateTime.now().toString))
               .map(_.map(paymentMethod => ParentProfileBackend(Nil, Nil, Seq(paymentMethod)).paymentMethod(paymentMethod.id)))
         }.map(_.toOption.flatten)
       ),

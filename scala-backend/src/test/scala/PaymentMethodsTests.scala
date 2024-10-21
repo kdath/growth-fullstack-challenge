@@ -2,6 +2,8 @@ import domain._
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers._
 
+import java.time.LocalDate
+
 class PaymentMethodsTests extends AnyFreeSpec with should.Matchers {
   private val parentProfileBackend =
     ParentProfileBackend(
@@ -56,25 +58,32 @@ class PaymentMethodsTests extends AnyFreeSpec with should.Matchers {
       parentProfileBackend.paymentMethods(1) shouldBe empty
     }
 
+    val creationTime = LocalDate.now().toString
+
     "When the first payment method is created, it should be there with the id of 1, because the id's are incremented every time a payment method is created" in {
       parentProfileBackend
         .createParentProfile(parent = "Alice", child = "Bob")
-        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = true)
-        .paymentMethods(1) should contain(PaymentMethod(id = 1, parentId = 1, method = "Credit Card", isActive = true))
+        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = true, creationTime)
+        .paymentMethods(1) should contain(PaymentMethod(id = 1, parentId = 1, method = "Credit Card", isActive = true, creationTime))
+
+      parentProfileBackend
+        .createParentProfile(parent = "Alice", child = "Bob")
+        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = true, creationTime)
+        .allPaymentMethods.foreach(f => println(f))
     }
 
     "When a payment method is created, and there is a payment method already, the new one should have an id of 2" in {
       parentProfileBackend
         .createParentProfile(parent = "Alice", child = "Bob")
-        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = false)
-        .createPaymentMethod(parentId = 1, method = "Debit Card", isActive = true)
-        .paymentMethods(1) should contain(PaymentMethod(id = 2, parentId = 1, method = "Debit Card", isActive = true))
+        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = false, creationTime)
+        .createPaymentMethod(parentId = 1, method = "Debit Card", isActive = true, creationTime)
+        .paymentMethods(1) should contain(PaymentMethod(id = 2, parentId = 1, method = "Debit Card", isActive = true, creationTime))
     }
 
     "When a payment method is deleted it should go away, because we don't want to keep payment methods around due to privacy concerns" in {
       parentProfileBackend
         .createParentProfile(parent = "Alice", child = "Bob")
-        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = true)
+        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = true, creationTime)
         .deletePaymentMethod(0)
         .allPaymentMethods.length shouldBe 0
     }
@@ -82,27 +91,27 @@ class PaymentMethodsTests extends AnyFreeSpec with should.Matchers {
     "When a payment method is deleted it should not remove other payment methods of same name" in {
       parentProfileBackend
         .createParentProfile(parent = "Alice", child = "Bob")
-        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = true)
-        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = false)
+        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = true, creationTime)
+        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = false, creationTime)
         .deletePaymentMethod(1)
-        .allPaymentMethods.head shouldBe PaymentMethod(id = 1, parentId = 1, method = "Credit Card", isActive = true)
+        .allPaymentMethods.head shouldBe PaymentMethod(id = 1, parentId = 1, method = "Credit Card", isActive = true, creationTime)
     }
 
     "When setting a payment method active, it should deactivate the current active one and activate the new one, so that we don't have multiple active payment methods" in {
       parentProfileBackend
         .createParentProfile(parent = "Alice", child = "Bob")
-        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = false)
-        .createPaymentMethod(parentId = 1, method = "Debit Card", isActive = true)
+        .createPaymentMethod(parentId = 1, method = "Credit Card", isActive = false, creationTime)
+        .createPaymentMethod(parentId = 1, method = "Debit Card", isActive = true, creationTime)
         .setActivePaymentMethod(parentId = 1, methodId = 1)
-        .paymentMethods(1) should contain(PaymentMethod(id = 1, parentId = 1, method = "Credit Card", isActive = true))
+        .paymentMethods(1) should contain(PaymentMethod(id = 1, parentId = 1, method = "Credit Card", isActive = true, creationTime))
     }
 
     "When a payment method is added, we should be able to get it by id, so what we can show the newly added payment method" in {
       parentProfileBackend
         .createParentProfile(parent = "Alice", child = "Bob")
         .createParentProfile(parent = "Charlie", child = "David")
-        .createPaymentMethod(parentId = 2, method = "Credit Card", isActive = true)
-        .paymentMethod(1) shouldBe Some(PaymentMethod(id = 1, parentId = 2, method = "Credit Card", isActive = true))
+        .createPaymentMethod(parentId = 2, method = "Credit Card", isActive = true, creationTime)
+        .paymentMethod(1) shouldBe Some(PaymentMethod(id = 1, parentId = 2, method = "Credit Card", isActive = true, creationTime))
     }
   }
 }

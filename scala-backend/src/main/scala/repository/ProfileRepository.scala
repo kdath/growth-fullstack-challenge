@@ -1,10 +1,13 @@
 package repository
 
-import scala.util.chaining._
+import akka.http.scaladsl.model.DateTime
 
+import scala.util.chaining._
 import domain._
 import slick.jdbc.MySQLProfile.api._
-import scala.concurrent.{Future, ExecutionContext}
+
+import java.time.LocalDateTime
+import scala.concurrent.{ExecutionContext, Future}
 
 class ProfileRepository(db: Database)(implicit ec: ExecutionContext) {
 
@@ -20,7 +23,8 @@ class ProfileRepository(db: Database)(implicit ec: ExecutionContext) {
     def parentId = column[Long]("parent_id")
     def method = column[String]("method")
     def isActive = column[Boolean]("is_active")
-    def * = (id, parentId, method, isActive) <> (PaymentMethod.tupled, PaymentMethod.unapply)
+    def createdAt = column[String]("created_at")
+    def * = (id, parentId, method, isActive, createdAt) <> (PaymentMethod.tupled, PaymentMethod.unapply)
   }
 
   private class InvoicesTable(tag: Tag) extends Table[Invoice](tag, "invoices") {
